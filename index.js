@@ -51,7 +51,7 @@ app.post("/webhook", async (req, res) => {
         }
 
         // ✔ ENDPOINT CORRETO (SEM 404)
-        const url = `https://apis.roblox.com/datastores/v1/universes/${UNIVERSE_ID}/standard-datastores/datastore/entries/${userId}?datastoreName=WhitelistPlayers`
+        const url = `https://apis.roblox.com/datastores/v1/universes/${UNIVERSE_ID}/standard-datastores/datastores/WhitelistPlayers/entries/${userId}`
 
         const response = await fetch(url, {
             method: "POST",
