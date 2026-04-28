@@ -5,10 +5,13 @@ const fetch = (...args) => import("node-fetch").then(({ default: fetch }) => fet
 const app = express()
 app.use(bodyParser.json())
 
+// ======================
+// 📦 PAYHIP WEBHOOK
+// ======================
 app.post("/payhip", async (req, res) => {
     try {
 
-        console.log("WEBHOOK RECEBIDO:", JSON.stringify(req.body, null, 2))
+        console.log("WEBHOOK PAYHIP:", JSON.stringify(req.body, null, 2))
 
         const userId =
             req.body?.checkout_questions?.find(q => q.question.includes("Roblox"))?.response
@@ -18,8 +21,8 @@ app.post("/payhip", async (req, res) => {
             return res.sendStatus(400)
         }
 
-        // 🔥 TROCA AQUI PELO LINK REAL DO SEU ROBLOX SERVER
-        const response = await fetch("https://SEU-LINK-REAL-AQUI/webhook", {
+        // envia para rota interna /webhook
+        await fetch("https://payhip-whitelist.onrender.com/webhook", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -30,13 +33,38 @@ app.post("/payhip", async (req, res) => {
             })
         })
 
-        console.log("✔ Enviado pro Roblox:", userId)
-        console.log("Status Roblox:", response.status)
+        console.log("✔ Encaminhado para webhook:", userId)
 
         res.sendStatus(200)
 
     } catch (err) {
-        console.log("❌ ERRO:", err)
+        console.log("❌ ERRO PAYHIP:", err)
+        res.sendStatus(500)
+    }
+})
+
+// ======================
+// 🔥 WEBHOOK INTERNO (ROBLOX)
+// ======================
+app.post("/webhook", async (req, res) => {
+    try {
+
+        console.log("WEBHOOK INTERNO:", req.body)
+
+        const { userId, secret } = req.body
+
+        if (secret !== "12345") {
+            console.log("❌ Secret inválido")
+            return res.sendStatus(403)
+        }
+
+        // 🔥 AQUI ENTRA SUA LÓGICA DE WHITELIST (DataStore / Roblox script)
+        console.log("✔ WHITELIST LIBERADA:", userId)
+
+        res.sendStatus(200)
+
+    } catch (err) {
+        console.log("❌ ERRO WEBHOOK:", err)
         res.sendStatus(500)
     }
 })
