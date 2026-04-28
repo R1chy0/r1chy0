@@ -20,7 +20,8 @@ app.post("/payhip", async (req, res) => {
             return res.sendStatus(400)
         }
 
-        const url = `https://apis.roblox.com/datastores/v1/universes/${UNIVERSE_ID}/standard-datastores/datastore/WhitelistPlayers/entries/entry`
+        // ✔ ENDPOINT CORRETO
+        const url = `https://apis.roblox.com/datastores/v1/universes/${UNIVERSE_ID}/standard-datastores/WhitelistPlayers/entries/${userId}`
 
         const response = await fetch(url, {
             method: "POST",
@@ -28,10 +29,7 @@ app.post("/payhip", async (req, res) => {
                 "x-api-key": API_KEY,
                 "Content-Type": "application/json"
             },
-            body: JSON.stringify({
-                key: userId.toString(),
-                value: true
-            })
+            body: JSON.stringify(true)
         })
 
         console.log("✔ Whitelist liberada:", userId)
