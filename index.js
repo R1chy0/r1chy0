@@ -4,9 +4,6 @@ const bodyParser = require("body-parser")
 const app = express()
 app.use(bodyParser.json())
 
-const API_KEY = process.env.ROBLOX_API_KEY
-const UNIVERSE_ID = process.env.UNIVERSE_ID
-
 app.post("/payhip", async (req, res) => {
     try {
 
@@ -16,24 +13,23 @@ app.post("/payhip", async (req, res) => {
             req.body?.checkout_questions?.find(q => q.question.includes("Roblox"))?.response
 
         if (!userId) {
-            console.log("❌ robloxUserId não encontrado")
+            console.log("❌ userId não encontrado")
             return res.sendStatus(400)
         }
 
-        // ✔ ENDPOINT CORRETO
-        const url = `https://apis.roblox.com/datastores/v1/universes/${UNIVERSE_ID}/standard-datastores/WhitelistPlayers/entries/${userId}`
-
-        const response = await fetch(url, {
+        // 🔁 AQUI VOCÊ ENVIA PRO ROBLOX (seu servidor Roblox via HTTP ou bridge)
+        await fetch("https://SEU-SERVIDOR-ROBLOX/webhook", {
             method: "POST",
             headers: {
-                "x-api-key": API_KEY,
                 "Content-Type": "application/json"
             },
-            body: JSON.stringify(true)
+            body: JSON.stringify({
+                userId: Number(userId),
+                secret: "12345"
+            })
         })
 
-        console.log("✔ Whitelist liberada:", userId)
-        console.log("Roblox status:", response.status)
+        console.log("✔ Enviado pro Roblox:", userId)
 
         res.sendStatus(200)
 
