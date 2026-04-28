@@ -1,11 +1,9 @@
 const express = require("express")
 const bodyParser = require("body-parser")
+const fetch = (...args) => import("node-fetch").then(({ default: fetch }) => fetch(...args))
 
 const app = express()
 app.use(bodyParser.json())
-
-// ✔ se seu Node NÃO tiver fetch nativo, descomenta isso:
-// const fetch = (...args) => import("node-fetch").then(({ default: fetch }) => fetch(...args))
 
 app.post("/payhip", async (req, res) => {
     try {
@@ -20,8 +18,8 @@ app.post("/payhip", async (req, res) => {
             return res.sendStatus(400)
         }
 
-        // 🔁 envia para seu servidor Roblox
-        const response = await fetch("https://SEU-SERVIDOR-ROBLOX/webhook", {
+        // 🔥 TROCA AQUI PELO LINK REAL DO SEU ROBLOX SERVER
+        const response = await fetch("https://SEU-LINK-REAL-AQUI/webhook", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
