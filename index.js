@@ -10,14 +10,10 @@ const UNIVERSE_ID = process.env.UNIVERSE_ID
 app.post("/payhip", async (req, res) => {
     try {
 
-        // 🔍 DEBUG do webhook
         console.log("WEBHOOK RECEBIDO:", JSON.stringify(req.body, null, 2))
 
-        // 📦 pega userId de vários formatos possíveis
         const userId =
-            req.body?.custom_fields?.robloxUserId ||
-            req.body?.customer?.custom_fields?.robloxUserId ||
-            req.body?.data?.custom_fields?.robloxUserId
+            req.body?.checkout_questions?.find(q => q.question.includes("Roblox"))?.response
 
         if (!userId) {
             console.log("❌ robloxUserId não encontrado")
