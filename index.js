@@ -4,6 +4,9 @@ const bodyParser = require("body-parser")
 const app = express()
 app.use(bodyParser.json())
 
+// ✔ se seu Node NÃO tiver fetch nativo, descomenta isso:
+// const fetch = (...args) => import("node-fetch").then(({ default: fetch }) => fetch(...args))
+
 app.post("/payhip", async (req, res) => {
     try {
 
@@ -17,8 +20,8 @@ app.post("/payhip", async (req, res) => {
             return res.sendStatus(400)
         }
 
-        // 🔁 AQUI VOCÊ ENVIA PRO ROBLOX (seu servidor Roblox via HTTP ou bridge)
-        await fetch("https://SEU-SERVIDOR-ROBLOX/webhook", {
+        // 🔁 envia para seu servidor Roblox
+        const response = await fetch("https://SEU-SERVIDOR-ROBLOX/webhook", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -30,6 +33,7 @@ app.post("/payhip", async (req, res) => {
         })
 
         console.log("✔ Enviado pro Roblox:", userId)
+        console.log("Status Roblox:", response.status)
 
         res.sendStatus(200)
 
@@ -39,4 +43,6 @@ app.post("/payhip", async (req, res) => {
     }
 })
 
-app.listen(3000, () => console.log("Server online"))
+app.listen(process.env.PORT || 3000, () => {
+    console.log("Server online")
+})
