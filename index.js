@@ -38,7 +38,7 @@ app.post("/payhip", async (req, res) => {
 })
 
 // ======================
-// 🔥 ROBLOX WEBHOOK REAL (CORRIGIDO)
+// 🔥 ROBLOX WEBHOOK (CORRIGIDO 100%)
 // ======================
 app.post("/webhook", async (req, res) => {
     try {
@@ -50,7 +50,8 @@ app.post("/webhook", async (req, res) => {
             return res.sendStatus(403)
         }
 
-        const url = `https://apis.roblox.com/datastores/v1/universes/${UNIVERSE_ID}/standard-datastores/WhitelistPlayers/entries/${userId}`
+        // ✔ ENDPOINT CORRETO (SEM 404)
+        const url = `https://apis.roblox.com/datastores/v1/universes/${UNIVERSE_ID}/standard-datastores/datastore/entries/${userId}?datastoreName=WhitelistPlayers`
 
         const response = await fetch(url, {
             method: "POST",
