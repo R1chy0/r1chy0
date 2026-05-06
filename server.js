@@ -4,12 +4,10 @@ import fetch from "node-fetch"
 const app = express()
 app.use(express.json())
 
-const SECRET = "r1chy0-secret"
-
-// 🔐 Roblox Open Cloud
-const UNIVERSE_ID = "SEU_UNIVERSE_ID"
-const DATASTORE_NAME = "WhitelistData"
-const API_KEY = "SUA_API_KEY"
+// 🔐 variáveis vêm do Render (NUNCA do GitHub)
+const SECRET = process.env.PAYHIP_WEBHOOK_SECRET
+const API_KEY = process.env.ROBLOX_API_KEY
+const UNIVERSE_ID = process.env.ROBLOX_UNIVERSE_ID
 
 app.post("/payhip-webhook", async (req, res) => {
 	try {
@@ -18,9 +16,11 @@ app.post("/payhip-webhook", async (req, res) => {
 		const userId = body?.custom_fields?.robloxId
 		const secret = body?.secret
 
+		// validação de segurança
 		if (secret !== SECRET) return res.sendStatus(403)
 		if (!userId) return res.sendStatus(400)
 
+		// ✔ Open Cloud (Roblox DataStore)
 		const url = `https://apis.roblox.com/datastores/v1/universes/${UNIVERSE_ID}/standard-datastores/datastore/entries/entry`
 
 		await fetch(url, {
@@ -40,11 +40,12 @@ app.post("/payhip-webhook", async (req, res) => {
 		res.sendStatus(200)
 
 	} catch (err) {
-		console.log(err)
+		console.log("Erro:", err)
 		res.sendStatus(500)
 	}
 })
 
-app.listen(3000, () => {
-	console.log("Webhook rodando")
+const PORT = process.env.PORT || 3000
+app.listen(PORT, () => {
+	console.log("Servidor rodando na porta", PORT)
 })
