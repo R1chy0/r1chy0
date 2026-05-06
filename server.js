@@ -4,31 +4,44 @@ import fetch from "node-fetch"
 const app = express()
 app.use(express.json())
 
+// 🔐 ENV (Render)
 const API_KEY = process.env.ROBLOX_API_KEY
 const UNIVERSE_ID = process.env.ROBLOX_UNIVERSE_ID
 
+//--------------------------------------------------
+// ✔ WEBHOOK PAYHIP
+//--------------------------------------------------
 app.post("/payhip-webhook", async (req, res) => {
 	try {
 		console.log("🔥 WEBHOOK RECEBIDO:")
 		console.log(JSON.stringify(req.body, null, 2))
 
-		const body = req.body
+		// ✔ transforma checkout_questions em objeto
+		const questions = Object.fromEntries(
+			req.body?.checkout_questions?.map(q => [
+				q.question?.trim(),
+				q.response
+			]) || []
+		)
 
-		// ✔ pega o Roblox UserID do checkout_questions
-		const robloxId = body?.checkout_questions?.find(
-			q => q.question && q.question.toLowerCase().includes("roblox")
-		)?.response
+		// ✔ pega Roblox ID (pelo nome da pergunta)
+		const robloxId =
+			questions["Enter your Roblox UserID"] ||
+			questions["Roblox UserID"] ||
+			questions["UserID"]
 
+		// ✔ validação básica
 		if (!robloxId) {
 			console.log("❌ ROBLOX ID NÃO ENCONTRADO")
 			return res.sendStatus(400)
 		}
 
-		console.log("✔ USER ID ENCONTRADO:", robloxId)
+		console.log("✔ ROBLOX ID:", robloxId)
 
-		// ✔ Open Cloud DataStore
+		// ✔ Open Cloud DataStore URL
 		const url = `https://apis.roblox.com/datastores/v1/universes/${UNIVERSE_ID}/standard-datastores/datastore/entries/entry`
 
+		// ✔ salva whitelist
 		const result = await fetch(url, {
 			method: "POST",
 			headers: {
@@ -42,12 +55,15 @@ app.post("/payhip-webhook", async (req, res) => {
 		})
 
 		if (!result.ok) {
-			const text = await result.text()
-			console.log("❌ ERRO OPEN CLOUD:", text)
+			const errText = await result.text()
+			console.log("❌ ERRO OPEN CLOUD:", errText)
 			return res.sendStatus(500)
 		}
 
 		console.log("✔ WHITELIST ADICIONADA:", robloxId)
+
+		// ✔ opcional: log extras (email etc)
+		console.log("📦 DADOS EXTRAS:", questions)
 
 		res.sendStatus(200)
 
@@ -57,6 +73,9 @@ app.post("/payhip-webhook", async (req, res) => {
 	}
 })
 
+//--------------------------------------------------
+// ✔ SERVER START
+//--------------------------------------------------
 const PORT = process.env.PORT || 3000
 app.listen(PORT, () => {
 	console.log("🚀 Servidor rodando na porta", PORT)
