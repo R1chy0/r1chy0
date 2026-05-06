@@ -4,11 +4,9 @@ import fetch from "node-fetch"
 const app = express()
 app.use(express.json())
 
-const SECRET = process.env.PAYHIP_WEBHOOK_SECRET
 const API_KEY = process.env.ROBLOX_API_KEY
 const UNIVERSE_ID = process.env.ROBLOX_UNIVERSE_ID
 
-// ✔ DEBUG TOTAL (ver tudo que chega)
 app.post("/payhip-webhook", async (req, res) => {
 	try {
 		console.log("🔥 WEBHOOK RECEBIDO:")
@@ -16,23 +14,19 @@ app.post("/payhip-webhook", async (req, res) => {
 
 		const body = req.body
 
-		const userId =
-			body?.custom_fields?.robloxId ||
-			body?.robloxId ||
-			body?.data?.robloxId
+		// ✔ pega o Roblox UserID do checkout_questions
+		const robloxId = body?.checkout_questions?.find(
+			q => q.question && q.question.toLowerCase().includes("roblox")
+		)?.response
 
-		const secret = body?.secret
-
-		if (secret !== SECRET) {
-			console.log("❌ SECRET INVÁLIDO")
-			return res.sendStatus(403)
-		}
-
-		if (!userId) {
-			console.log("❌ SEM ROBLOX ID NO PAYLOAD")
+		if (!robloxId) {
+			console.log("❌ ROBLOX ID NÃO ENCONTRADO")
 			return res.sendStatus(400)
 		}
 
+		console.log("✔ USER ID ENCONTRADO:", robloxId)
+
+		// ✔ Open Cloud DataStore
 		const url = `https://apis.roblox.com/datastores/v1/universes/${UNIVERSE_ID}/standard-datastores/datastore/entries/entry`
 
 		const result = await fetch(url, {
@@ -42,17 +36,18 @@ app.post("/payhip-webhook", async (req, res) => {
 				"Content-Type": "application/json"
 			},
 			body: JSON.stringify({
-				key: `whitelist_${userId}`,
+				key: `whitelist_${robloxId}`,
 				value: "eterno"
 			})
 		})
 
 		if (!result.ok) {
-			console.log("❌ ERRO OPEN CLOUD:", await result.text())
+			const text = await result.text()
+			console.log("❌ ERRO OPEN CLOUD:", text)
 			return res.sendStatus(500)
 		}
 
-		console.log("✔ WHITELIST ADICIONADA:", userId)
+		console.log("✔ WHITELIST ADICIONADA:", robloxId)
 
 		res.sendStatus(200)
 
@@ -64,5 +59,5 @@ app.post("/payhip-webhook", async (req, res) => {
 
 const PORT = process.env.PORT || 3000
 app.listen(PORT, () => {
-	console.log("🚀 Rodando na porta", PORT)
+	console.log("🚀 Servidor rodando na porta", PORT)
 })
