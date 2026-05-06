@@ -37,10 +37,10 @@ app.post("/payhip-webhook", async (req, res) => {
 
 		console.log("✔ ROBLOX ID:", robloxId)
 
-		// ✔ Open Cloud URL CORRETA (sem datastore no path)
-		const url = `https://apis.roblox.com/datastores/v1/universes/${UNIVERSE_ID}/standard-datastores/datastore/entries/entry`
+		// ✔ OPEN CLOUD URL CORRETA (datastore na URL)
+		const url = `https://apis.roblox.com/datastores/v1/universes/${UNIVERSE_ID}/standard-datastores/datastores/PayhipWhitelistServer/entries/whitelist_${robloxId}`
 
-		// ✔ salvando no Open Cloud (datastoreName no BODY)
+		// ✔ salva valor direto
 		const result = await fetch(url, {
 			method: "POST",
 			headers: {
@@ -48,8 +48,6 @@ app.post("/payhip-webhook", async (req, res) => {
 				"Content-Type": "application/json"
 			},
 			body: JSON.stringify({
-				datastoreName: "PayhipWhitelistServer",
-				key: `whitelist_${robloxId}`,
 				value: "eterno"
 			})
 		})
