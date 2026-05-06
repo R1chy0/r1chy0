@@ -16,7 +16,7 @@ app.post("/payhip-webhook", async (req, res) => {
 		console.log("🔥 WEBHOOK RECEBIDO:")
 		console.log(JSON.stringify(req.body, null, 2))
 
-		// ✔ transforma checkout_questions em objeto
+		// ✔ transforma perguntas em objeto
 		const questions = Object.fromEntries(
 			req.body?.checkout_questions?.map(q => [
 				q.question?.trim(),
@@ -24,13 +24,12 @@ app.post("/payhip-webhook", async (req, res) => {
 			]) || []
 		)
 
-		// ✔ pega Roblox ID (pelo nome da pergunta)
+		// ✔ pega Roblox ID
 		const robloxId =
 			questions["Enter your Roblox UserID"] ||
 			questions["Roblox UserID"] ||
 			questions["UserID"]
 
-		// ✔ validação básica
 		if (!robloxId) {
 			console.log("❌ ROBLOX ID NÃO ENCONTRADO")
 			return res.sendStatus(400)
@@ -38,10 +37,10 @@ app.post("/payhip-webhook", async (req, res) => {
 
 		console.log("✔ ROBLOX ID:", robloxId)
 
-		// ✔ Open Cloud DataStore URL
+		// ✔ Open Cloud URL CORRETA (sem datastore no path)
 		const url = `https://apis.roblox.com/datastores/v1/universes/${UNIVERSE_ID}/standard-datastores/datastore/entries/entry`
 
-		// ✔ salva whitelist
+		// ✔ salvando no Open Cloud (datastoreName no BODY)
 		const result = await fetch(url, {
 			method: "POST",
 			headers: {
@@ -49,6 +48,7 @@ app.post("/payhip-webhook", async (req, res) => {
 				"Content-Type": "application/json"
 			},
 			body: JSON.stringify({
+				datastoreName: "PayhipWhitelistServer",
 				key: `whitelist_${robloxId}`,
 				value: "eterno"
 			})
@@ -61,9 +61,7 @@ app.post("/payhip-webhook", async (req, res) => {
 		}
 
 		console.log("✔ WHITELIST ADICIONADA:", robloxId)
-
-		// ✔ opcional: log extras (email etc)
-		console.log("📦 DADOS EXTRAS:", questions)
+		console.log("📦 EXTRAS:", questions)
 
 		res.sendStatus(200)
 
