@@ -37,29 +37,35 @@ app.post("/payhip-webhook", async (req, res) => {
 
 		console.log("✔ ROBLOX ID:", robloxId)
 
-		// ✔ OPEN CLOUD URL CORRETA (datastore na URL)
-		const url = `https://apis.roblox.com/datastores/v1/universes/${UNIVERSE_ID}/standard-datastores/datastores/PayhipWhitelistServer/entries/whitelist_${robloxId}`
+		//--------------------------------------------------
+		// ✔ ENVIO CORRETO (MessagingService)
+		//--------------------------------------------------
+		const result = await fetch(
+			`https://apis.roblox.com/messaging-service/v1/universes/${UNIVERSE_ID}/topics/WhitelistUpdate`,
+			{
+				method: "POST",
+				headers: {
+					"x-api-key": API_KEY,
+					"Content-Type": "application/json"
+				},
+				body: JSON.stringify({
+					message: JSON.stringify({
+						action: "add",
+						id: Number(robloxId)
+					})
+				})
+			}
+		)
 
-		// ✔ salva valor direto
-		const result = await fetch(url, {
-			method: "POST",
-			headers: {
-				"x-api-key": API_KEY,
-				"Content-Type": "application/json"
-			},
-			body: JSON.stringify({
-				value: "eterno"
-			})
-		})
+		const text = await result.text()
 
 		if (!result.ok) {
-			const errText = await result.text()
-			console.log("❌ ERRO OPEN CLOUD:", errText)
+			console.log("❌ ERRO ROBLOX:", text)
 			return res.sendStatus(500)
 		}
 
-		console.log("✔ WHITELIST ADICIONADA:", robloxId)
-		console.log("📦 EXTRAS:", questions)
+		console.log("✔ WHITELIST ENVIADA:", robloxId)
+		console.log("📦 RESPOSTA:", text)
 
 		res.sendStatus(200)
 
